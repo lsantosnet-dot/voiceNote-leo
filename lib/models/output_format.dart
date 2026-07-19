@@ -2,7 +2,8 @@
 enum OutputFormat {
   topics('Tópicos'),
   freeText('Texto corrido'),
-  meetingMinutes('Ata de reunião');
+  meetingMinutes('Ata de reunião'),
+  correctedTranscription('Transcrição corrigida');
 
   final String label;
 

@@ -1,25 +1,33 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import 'package:record/record.dart';
 
+import '../models/output_format.dart';
 import '../services/audio_recorder_service.dart';
+import '../services/settings_repository.dart';
 
 enum RecordingPhase { idle, recording, permissionDenied }
 
 /// Estado da tela de gravação: ociosa, gravando ou aguardando permissão.
 class RecordingState extends ChangeNotifier {
-  RecordingState({AudioRecorderService? service})
-      : _service = service ?? AudioRecorderService();
+  RecordingState({AudioRecorderService? service, SettingsRepository? settingsRepository})
+      : _service = service ?? AudioRecorderService(),
+        _settingsRepository = settingsRepository ?? SettingsRepository() {
+    _loadInitialFormat();
+  }
 
   static const int _waveformBarCount = 28;
 
   final AudioRecorderService _service;
+  final SettingsRepository _settingsRepository;
 
   RecordingPhase _phase = RecordingPhase.idle;
   Duration _elapsed = Duration.zero;
   List<double> _levels = List.filled(_waveformBarCount, 0.06);
   String? _lastRecordingPath;
+  OutputFormat _selectedFormat = OutputFormat.topics;
 
   Timer? _ticker;
   StreamSubscription<Amplitude>? _amplitudeSub;
@@ -30,6 +38,28 @@ class RecordingState extends ChangeNotifier {
   Duration get elapsed => _elapsed;
   List<double> get levels => _levels;
   String? get lastRecordingPath => _lastRecordingPath;
+  OutputFormat get selectedFormat => _selectedFormat;
+
+  /// Carrega o formato salvo nas configurações como valor inicial do
+  /// seletor da tela de gravação. Em testes de widget que não abrem o box
+  /// do Hive, mantém o padrão ([OutputFormat.topics]) em vez de propagar o
+  /// erro.
+  void _loadInitialFormat() {
+    try {
+      _selectedFormat = _settingsRepository.getOutputFormat();
+      notifyListeners();
+    } on HiveError {
+      // Hive não inicializado (ambiente de teste) — mantém o padrão.
+    }
+  }
+
+  /// Escolhido pelo usuário antes de gravar — vale para a nota que está
+  /// prestes a gravar e também vira o novo padrão nas configurações.
+  void selectFormat(OutputFormat format) {
+    _selectedFormat = format;
+    notifyListeners();
+    unawaited(_settingsRepository.setOutputFormat(format));
+  }
 
   Future<void> toggleRecording() {
     return isRecording ? _stop() : _start();

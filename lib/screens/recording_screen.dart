@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/output_format.dart';
 import '../state/recording_state.dart';
 import '../widgets/app_colors.dart';
 import '../widgets/record_button.dart';
@@ -154,6 +155,13 @@ class _CaptureView extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        if (!state.isRecording) ...[
+          _FormatPicker(
+            selected: state.selectedFormat,
+            onSelected: state.selectFormat,
+          ),
+          const SizedBox(height: 24),
+        ],
         Waveform(levels: state.levels, isRecording: state.isRecording),
         const SizedBox(height: 28),
         Text(
@@ -197,6 +205,64 @@ class _CaptureView extends StatelessWidget {
     final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
+  }
+}
+
+/// Seletor do formato de saída, escolhido antes de gravar — some enquanto
+/// grava, já que passar a valer só na próxima nota seria confuso.
+class _FormatPicker extends StatelessWidget {
+  const _FormatPicker({required this.selected, required this.onSelected});
+
+  final OutputFormat selected;
+  final ValueChanged<OutputFormat> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final format in OutputFormat.values)
+          _FormatChip(
+            label: format.label,
+            selected: format == selected,
+            onTap: () => onSelected(format),
+          ),
+      ],
+    );
+  }
+}
+
+class _FormatChip extends StatelessWidget {
+  const _FormatChip({required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.accentDim : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? AppColors.accent : AppColors.line),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            color: selected ? AppColors.accent : AppColors.textMuted,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ),
+    );
   }
 }
 

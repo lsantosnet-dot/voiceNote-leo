@@ -194,6 +194,21 @@ Decisões tomadas.
 Próximos passos
 Ações e responsáveis, se mencionados.
 ''',
+      OutputFormat.correctedTranscription => '''
+Transcreva fielmente a fala em português do Brasil contida no áudio a
+seguir, mantendo todo o conteúdo e o sentido original — não resuma, não
+organize em tópicos ou seções.
+
+Ao transcrever, ajuste o texto para leitura:
+- Corrija ortografia, concordância e pontuação.
+- Remova pausas, hesitações ("é...", "tipo", "né", "hã") e repetições que
+  não acrescentam sentido.
+- Adeque frases soltas ou cortadas ao contexto, sem alterar o significado
+  do que foi dito.
+
+Responda apenas com o texto corrigido, em parágrafos corridos, sem
+comentários extras.
+''',
     };
   }
 }
