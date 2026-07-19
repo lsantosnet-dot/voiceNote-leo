@@ -57,8 +57,37 @@ class _RecordingScreenBody extends StatelessWidget {
   }
 }
 
-class _TopBar extends StatelessWidget {
+class _TopBar extends StatefulWidget {
   const _TopBar();
+
+  @override
+  State<_TopBar> createState() => _TopBarState();
+}
+
+class _TopBarState extends State<_TopBar> {
+  bool _settingsOpen = false;
+  bool _historyOpen = false;
+
+  /// Os ícones funcionam como toggle: abrir (empilha a tela) fica desativado
+  /// enquanto ela já está aberta — fechar acontece pela seta de voltar, que
+  /// resolve o Future do push e reativa o ícone.
+  Future<void> _openSettings(BuildContext context) async {
+    if (_settingsOpen) return;
+    setState(() => _settingsOpen = true);
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+    );
+    if (mounted) setState(() => _settingsOpen = false);
+  }
+
+  Future<void> _openHistory(BuildContext context) async {
+    if (_historyOpen) return;
+    setState(() => _historyOpen = true);
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+    );
+    if (mounted) setState(() => _historyOpen = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,17 +127,15 @@ class _TopBar extends StatelessWidget {
             TopBarIconButton(
               icon: Icons.settings_outlined,
               tooltip: 'Configurações',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              ),
+              active: _settingsOpen,
+              onPressed: () => _openSettings(context),
             ),
             const SizedBox(width: 8),
             TopBarIconButton(
               icon: Icons.history,
               tooltip: 'Histórico',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const HistoryScreen()),
-              ),
+              active: _historyOpen,
+              onPressed: () => _openHistory(context),
             ),
           ],
         ),

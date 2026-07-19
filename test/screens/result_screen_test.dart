@@ -174,28 +174,52 @@ void main() {
     state.dispose();
   });
 
-  testWidgets('erro inicial mostra mensagem e botão de tentar novamente', (tester) async {
-    final state = await _buildAndAwaitState(
-      tester,
-      audioPath: audioFile.path,
-      recordingDuration: Duration.zero,
-      transcriptionService: _fakeService(() async {
-        throw const NoInternetException();
-      }),
+  // Cobre os três cenários de erro citados no spec: sem internet, chave
+  // inválida e limite de quota excedido — cada um com mensagem própria,
+  // sem jargão técnico de API, e com o botão de tentar novamente.
+  for (final scenario in [
+    (
+      description: 'sem internet',
+      exception: const NoInternetException(),
+      expectedText: 'Sem conexão',
+    ),
+    (
+      description: 'chave inválida',
+      exception: const InvalidApiKeyException(),
+      expectedText: 'chave de API informada não é válida',
+    ),
+    (
+      description: 'quota excedida',
+      exception: const QuotaExceededException(),
+      expectedText: 'Limite gratuito do Gemini',
+    ),
+  ]) {
+    testWidgets(
+      'erro inicial (${scenario.description}) mostra mensagem e botão de tentar novamente',
+      (tester) async {
+        final state = await _buildAndAwaitState(
+          tester,
+          audioPath: audioFile.path,
+          recordingDuration: Duration.zero,
+          transcriptionService: _fakeService(() async {
+            throw scenario.exception;
+          }),
+        );
+        addTearDown(() => tester.runAsync(() async => state.dispose()));
+
+        await tester.pumpWidget(MaterialApp(
+          home: ResultScreen(
+            audioPath: audioFile.path,
+            recordingDuration: Duration.zero,
+            debugState: state,
+          ),
+        ));
+
+        expect(find.textContaining(scenario.expectedText), findsOneWidget);
+        expect(find.text('Tentar novamente'), findsOneWidget);
+      },
     );
-    addTearDown(() => tester.runAsync(() async => state.dispose()));
-
-    await tester.pumpWidget(MaterialApp(
-      home: ResultScreen(
-        audioPath: audioFile.path,
-        recordingDuration: Duration.zero,
-        debugState: state,
-      ),
-    ));
-
-    expect(find.textContaining('Sem conexão'), findsOneWidget);
-    expect(find.text('Tentar novamente'), findsOneWidget);
-  });
+  }
 
   testWidgets('botão reprocessar aciona o reprocessamento e atualiza o texto', (tester) async {
     var callCount = 0;

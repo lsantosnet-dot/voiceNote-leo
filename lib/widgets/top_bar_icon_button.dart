@@ -11,11 +11,16 @@ class TopBarIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.active = false,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback onPressed;
+
+  /// Verdadeiro enquanto a tela que este ícone abre está no topo da pilha —
+  /// usado só para destacar visualmente que o botão está "ligado".
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +37,9 @@ class TopBarIconButton extends StatelessWidget {
             height: 32,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.line),
+              border: Border.all(color: active ? AppColors.accentDim : AppColors.line),
             ),
-            child: Icon(icon, size: 16, color: AppColors.textMuted),
+            child: Icon(icon, size: 16, color: active ? AppColors.accent : AppColors.textMuted),
           ),
         ),
       ),
