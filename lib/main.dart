@@ -4,12 +4,14 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'models/note.dart';
 import 'screens/recording_screen.dart';
 import 'services/api_key_repository.dart';
+import 'services/note_repository.dart';
 import 'widgets/app_colors.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(NoteAdapter());
+  await Hive.openBox<Note>(NoteRepository.boxName);
   await _seedApiKeyForTestingIfNeeded();
   runApp(const VoiceNoteApp());
 }

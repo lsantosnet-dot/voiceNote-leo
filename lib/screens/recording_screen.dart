@@ -7,6 +7,7 @@ import '../widgets/record_button.dart';
 import '../widgets/top_bar_icon_button.dart';
 import '../widgets/waveform.dart';
 import 'history_screen.dart';
+import 'result_screen.dart';
 import 'settings_screen.dart';
 
 /// Tela principal (raiz) do app: gravação, nos estados ocioso e gravando.
@@ -140,11 +141,28 @@ class _CaptureView extends StatelessWidget {
         const SizedBox(height: 28),
         RecordButton(
           isRecording: state.isRecording,
-          onTap: () => state.toggleRecording(),
+          onTap: () => _handleTap(context, state),
         ),
         const SizedBox(height: 28),
         _Hint(state: state),
       ],
+    );
+  }
+
+  Future<void> _handleTap(BuildContext context, RecordingState state) async {
+    final wasRecording = state.isRecording;
+    final duration = state.elapsed;
+    await state.toggleRecording();
+
+    if (!wasRecording || state.permissionDenied) return;
+    final audioPath = state.lastRecordingPath;
+    if (audioPath == null) return;
+
+    if (!context.mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ResultScreen(audioPath: audioPath, recordingDuration: duration),
+      ),
     );
   }
 
