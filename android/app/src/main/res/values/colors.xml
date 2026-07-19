@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mesma paleta usada pelo app Flutter (lib/widgets/app_colors.dart),
+         aplicada ao widget de tela inicial nativo. -->
+    <color name="widget_surface">#17191D</color>
+    <color name="widget_line">#2A2D33</color>
+    <color name="widget_text">#E9EAED</color>
+    <color name="widget_accent">#4FD8C4</color>
+</resources>

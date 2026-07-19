@@ -10,10 +10,10 @@ class Note extends HiveObject {
   final String id;
 
   @HiveField(1)
-  final String title;
+  String title;
 
   @HiveField(2)
-  final String structuredText;
+  String structuredText;
 
   @HiveField(3)
   final DateTime timestamp;

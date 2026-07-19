@@ -3,8 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:voicenote_leo/main.dart';
 
 void main() {
-  testWidgets('App smoke test', (WidgetTester tester) async {
+  testWidgets('Tela de gravação inicia no estado ocioso', (WidgetTester tester) async {
     await tester.pumpWidget(const VoiceNoteApp());
-    expect(find.text('Fundação do projeto — telas em construção'), findsOneWidget);
+
+    expect(find.text('NOTA DE VOZ'), findsOneWidget);
+    expect(find.text('00:00'), findsOneWidget);
+    expect(
+      find.textContaining('Toque para gravar', findRichText: true),
+      findsOneWidget,
+    );
   });
 }
