@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../models/note.dart';
 import '../services/gemini_transcription_service.dart';
 import '../services/note_repository.dart';
+import '../services/settings_repository.dart';
 
 enum ResultPhase { loading, ready, error }
 
@@ -18,8 +19,10 @@ class ResultState extends ChangeNotifier {
     required this.recordingDuration,
     GeminiTranscriptionService? transcriptionService,
     NoteRepository? noteRepository,
+    SettingsRepository? settingsRepository,
   })  : _transcriptionService = transcriptionService ?? GeminiTranscriptionService(),
-        _noteRepository = noteRepository ?? NoteRepository() {
+        _noteRepository = noteRepository ?? NoteRepository(),
+        _settingsRepository = settingsRepository ?? SettingsRepository() {
     initialLoad = _process();
   }
 
@@ -44,6 +47,7 @@ class ResultState extends ChangeNotifier {
 
   final GeminiTranscriptionService _transcriptionService;
   final NoteRepository _noteRepository;
+  final SettingsRepository _settingsRepository;
 
   ResultPhase _phase = ResultPhase.loading;
   String _text = '';
@@ -75,6 +79,8 @@ class ResultState extends ChangeNotifier {
     try {
       final result = await _transcriptionService.transcribeAndStructure(
         audioFile: File(audioPath),
+        model: _settingsRepository.getModel(),
+        outputFormat: _settingsRepository.getOutputFormat(),
       );
       _text = result;
       _contentVersion++;
@@ -97,6 +103,8 @@ class ResultState extends ChangeNotifier {
     try {
       final result = await _transcriptionService.transcribeAndStructure(
         audioFile: File(audioPath),
+        model: _settingsRepository.getModel(),
+        outputFormat: _settingsRepository.getOutputFormat(),
       );
       _text = result;
       _contentVersion++;

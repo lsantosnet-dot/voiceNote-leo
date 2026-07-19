@@ -10,6 +10,7 @@ import 'package:voicenote_leo/screens/result_screen.dart';
 import 'package:voicenote_leo/services/api_key_repository.dart';
 import 'package:voicenote_leo/services/gemini_transcription_service.dart';
 import 'package:voicenote_leo/services/note_repository.dart';
+import 'package:voicenote_leo/services/settings_repository.dart';
 import 'package:voicenote_leo/state/result_state.dart';
 
 class _FakeApiKeyRepository extends ApiKeyRepository {
@@ -68,6 +69,7 @@ void main() {
 
   setUp(() async {
     await Hive.openBox<Note>(NoteRepository.boxName);
+    await Hive.openBox(SettingsRepository.boxName);
     audioFile = File(
       '${tempDir.path}/audio_${DateTime.now().microsecondsSinceEpoch}.m4a',
     );
@@ -78,6 +80,9 @@ void main() {
     final box = Hive.box<Note>(NoteRepository.boxName);
     await box.clear();
     await box.close();
+    final settingsBox = Hive.box(SettingsRepository.boxName);
+    await settingsBox.clear();
+    await settingsBox.close();
     if (await audioFile.exists()) await audioFile.delete();
   });
 

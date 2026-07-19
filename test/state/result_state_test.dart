@@ -3,10 +3,13 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:hive/hive.dart';
+import 'package:voicenote_leo/models/gemini_model.dart';
 import 'package:voicenote_leo/models/note.dart';
+import 'package:voicenote_leo/models/output_format.dart';
 import 'package:voicenote_leo/services/api_key_repository.dart';
 import 'package:voicenote_leo/services/gemini_transcription_service.dart';
 import 'package:voicenote_leo/services/note_repository.dart';
+import 'package:voicenote_leo/services/settings_repository.dart';
 import 'package:voicenote_leo/state/result_state.dart';
 
 class _FakeApiKeyRepository extends ApiKeyRepository {
@@ -42,6 +45,7 @@ void main() {
 
   setUp(() async {
     await Hive.openBox<Note>(NoteRepository.boxName);
+    await Hive.openBox(SettingsRepository.boxName);
     audioFile = File(
       '${tempDir.path}/audio_${DateTime.now().microsecondsSinceEpoch}.m4a',
     );
@@ -52,11 +56,44 @@ void main() {
     final box = Hive.box<Note>(NoteRepository.boxName);
     await box.clear();
     await box.close();
+    final settingsBox = Hive.box(SettingsRepository.boxName);
+    await settingsBox.clear();
+    await settingsBox.close();
     if (await audioFile.exists()) await audioFile.delete();
   });
 
   tearDownAll(() async {
     await tempDir.delete(recursive: true);
+  });
+
+  test('usa o modelo e o formato configurados nas preferências', () async {
+    final settingsRepository = SettingsRepository();
+    await settingsRepository.setModel(GeminiModel.pro);
+    await settingsRepository.setOutputFormat(OutputFormat.meetingMinutes);
+
+    String? capturedModel;
+    Iterable<Content>? capturedPrompt;
+    final state = ResultState(
+      audioPath: audioFile.path,
+      recordingDuration: Duration.zero,
+      transcriptionService: GeminiTranscriptionService(
+        apiKeyRepository: _FakeApiKeyRepository(),
+        generateContent: ({required apiKey, required model, required prompt}) async {
+          capturedModel = model;
+          capturedPrompt = prompt;
+          return _successResponse('Contexto\nOk.');
+        },
+      ),
+      noteRepository: NoteRepository(),
+      settingsRepository: settingsRepository,
+    );
+    await state.initialLoad;
+
+    expect(capturedModel, GeminiModel.pro.apiModelId);
+    final promptText = capturedPrompt!.single.parts.whereType<TextPart>().single.text;
+    expect(promptText, contains('ata de reunião'));
+
+    state.dispose();
   });
 
   test('processa o áudio ao iniciar e salva a nota no histórico', () async {
