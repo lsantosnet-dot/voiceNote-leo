@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'models/note.dart';
+import 'screens/recording_screen.dart';
+import 'widgets/app_colors.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,12 +20,15 @@ class VoiceNoteApp extends StatelessWidget {
     return MaterialApp(
       title: 'Nota de Voz',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4FD8C4)),
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: AppColors.background,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.accent,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(child: Text('Fundação do projeto — telas em construção')),
-      ),
+      home: const RecordingScreen(),
     );
   }
 }
